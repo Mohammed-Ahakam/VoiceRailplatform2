@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ApexVoice Admin — SaaS Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">Apex<span>Voice</span></div>
+            <nav class="nav">
+                <a href="#" class="nav-item active">Dashboard</a>
+                <a href="#" class="nav-item">Analytics</a>
+                <a href="#" class="nav-item">Settings</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <header class="header">
+                <h1>Welcome back, Merchant</h1>
+                <p>Configure your AI assistant and get your embed code.</p>
+            </header>
+
+            <div class="grid">
+                <!-- Configuration Card -->
+                <section class="card config-card">
+                    <div class="card-header">
+                        <h2>Assistant Configuration</h2>
+                    </div>
+                    <form id="config-form">
+                        <div class="form-group">
+                            <label for="store-name">Store Name</label>
+                            <input type="text" id="store-name" placeholder="e.g. Apex Keyboards" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="system-prompt">Assistant Personality & Knowledge</label>
+                            <textarea id="system-prompt" rows="8" placeholder="Tell the assistant who it is and what it knows about your products..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Products List</label>
+                            <div id="products-list" class="products-container">
+                                <!-- Dynamic products will be added here -->
+                            </div>
+                            <button type="button" id="add-product-btn" class="btn-secondary">+ Add Product</button>
+                        </div>
+                        <button type="submit" class="btn-primary">Save Configuration</button>
+                    </form>
+                </section>
+
+                <!-- Embed Code Card -->
+                <section class="card embed-card">
+                    <div class="card-header">
+                        <h2>Embed Code</h2>
+                        <p>Copy and paste these lines into your website's &lt;body&gt; tag.</p>
+                    </div>
+                    <div class="code-block">
+                        <pre id="embed-code">Select an API Key to generate code...</pre>
+                        <button id="copy-btn" class="btn-copy">Copy</button>
+                    </div>
+                    <div class="status-badge" id="status-badge" style="display:none">Configuration Saved!</div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

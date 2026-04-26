@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Widget Test</title>
+</head>
+<body>
+    <h1>Testing Widget</h1>
+    <script src="http://127.0.0.1:8001/cdn/apex-voice.js"></script>
+    <script>
+        window.addEventListener('load', () => {
+            console.log("Initializing ApexVoice...");
+            ApexVoice.init({
+                apiKey: "test_key",
+                companyName: "Test Co",
+                systemInstruction: "You are a test assistant."
+            });
+        });
+    </script>
+</body>
+</html>

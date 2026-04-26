@@ -1,0 +1,54 @@
+import os
+import csv
+
+def format_catalog_from_csv(csv_path):
+    print(f"DEBUG: Formatting catalog from {csv_path}")
+    if not os.path.exists(csv_path):
+        print(f"DEBUG: CSV path does not exist: {csv_path}")
+        return "- Aucun produit disponible pour le moment."
+    
+    catalog_lines = []
+    try:
+        with open(csv_path, mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                # Support various column names
+                name = row.get('Product') or row.get('Name') or row.get('Produit') or 'Produit inconnu'
+                price = row.get('Price') or row.get('Prix') or 'Prix sur demande'
+                specs = row.get('Description') or row.get('Specs') or row.get('Caractéristiques') or 'Pas de specs'
+                stock = row.get('Stock') or '1'
+                
+                line = f"- Produit: {name}, Prix: {price}, Specs: {specs}, Stock: {stock}"
+                catalog_lines.append(line)
+        
+        result = "\n".join(catalog_lines)
+        print(f"DEBUG: Formatted {len(catalog_lines)} products.")
+        return result
+    except Exception as e:
+        print(f"DEBUG: Error reading CSV: {e}")
+        return "- Erreur lors de la lecture du catalogue."
+
+ANTI_GRAVITY_PROMPT_TEMPLATE = """[CRITICAL: LANGUAGE RULE]
+YOU MUST SPEAK EXCLUSIVELY IN MOROCCAN DARIJA. 
+- NEVER use French sentences.
+- NEVER use Modern Standard Arabic (Fusha).
+- Use English ONLY for technical specs (RAM, SSD) and Prices.
+- Examples of your style: "Mreba bik", "Ach hab l-khater", "Had l-PC m9awed", "Llah i-barek fik".
+
+[MISSION]
+Tu es l'agent vocal exclusif de la boutique {COMPANY_NAME}. Ta mission est de vendre uniquement les produits listés dans le catalogue fourni.
+
+[SOURCE DE VÉRITÉ UNIQUE : CATALOGUE CSV]
+Voici les seuls produits que tu as le droit de vendre :
+{CATALOG_PLACEHOLDER}
+
+[RÈGLES DE COMPORTEMENT]
+1. AUCUNE HALLUCINATION : Ne parle jamais d'un produit qui n'est pas dans la liste ci-dessus.
+2. RÉPONSE AUX PRODUITS ABSENTS : Si le client demande un produit absent, réponds en Darija : "Smeh lia bzaf, had l-produit ma3ndnach f l-magasin f had l-weqt. Chouf m3aya had l-choix akhor li 3ndna..."
+3. VÉRIFICATION DU STOCK : Si Stock = 0, dis que c'est en rupture de stock.
+4. CONCISION : Max 2 phrases.
+
+[LOGIQUE DE VENTE]
+- Demande l'usage : "Lach ghadi t-sta3mel had l-pc? L-khidma wala l-gaming?".
+- Closing : Dès que le client confirme son intention d'achat (ex: "Wakha bghito", "Chrih lia", "Dir lia commande", "Sifto lia", "Bghit n-chri had l-PC"), utilise l'outil `checkout` immédiatement. Dis : "Wakha, ghadi n-ftha lik l-fenêtre bach t-3mer l-info dyalk".
+"""

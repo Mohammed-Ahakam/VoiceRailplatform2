@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Apex Keyboards — Premium mechanical keyboards crafted for those who demand more. Hot-swappable switches, Bluetooth connectivity, and premium build quality.">
+  <title>Apex Keyboards — Type Different</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ========== Navigation ========== -->
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="#" class="nav__logo">Apex<span>.</span></a>
+      <div class="nav__links">
+        <a href="#products">Products</a>
+        <a href="#shipping">Shipping</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== Hero ========== -->
+  <section class="hero" id="hero">
+    <div class="hero__glow" aria-hidden="true"></div>
+    <div class="hero__content">
+      <div class="hero__badge">Mechanical Keyboards</div>
+      <h1 class="hero__headline">
+        Type <span class="highlight">Different.</span>
+      </h1>
+      <p class="hero__sub">
+        Premium mechanical keyboards crafted for those who demand more.
+        Every switch tuned, every keycap sculpted, every detail considered.
+      </p>
+      <a href="#products" class="hero__cta">
+        Shop Now
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+        </svg>
+      </a>
+      <div class="hero__keys" aria-hidden="true">
+        <div class="hero__key">Esc</div>
+        <div class="hero__key">A</div>
+        <div class="hero__key">P</div>
+        <div class="hero__key">E</div>
+        <div class="hero__key">X</div>
+        <div class="hero__key hero__key--wide">Space</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Products ========== -->
+  <section class="products" id="products">
+    <div class="section-header">
+      <div class="section-header__label">Our Collection</div>
+      <h2 class="section-header__title">Built for Every Keystroke</h2>
+    </div>
+    <div id="products-grid"></div>
+  </section>
+
+  <!-- ========== Shipping Banner ========== -->
+  <section class="shipping-banner" id="shipping">
+    <div class="shipping-banner__grid">
+      <div class="shipping-banner__item">
+        <div class="shipping-banner__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a29bfe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </div>
+        <div class="shipping-banner__title">Free Standard Shipping</div>
+        <div class="shipping-banner__desc">Complimentary shipping on every order. Express and overnight options available.</div>
+      </div>
+      <div class="shipping-banner__item">
+        <div class="shipping-banner__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a29bfe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+          </svg>
+        </div>
+        <div class="shipping-banner__title">30-Day Free Returns</div>
+        <div class="shipping-banner__desc">Not the right fit? Return any keyboard within 30 days, no questions asked.</div>
+      </div>
+      <div class="shipping-banner__item">
+        <div class="shipping-banner__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a29bfe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="shipping-banner__title">2-Year Warranty</div>
+        <div class="shipping-banner__desc">Every keyboard is backed by our comprehensive manufacturer warranty.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Footer ========== -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="footer__brand">Apex<span>.</span></div>
+      <div class="footer__links">
+        <a href="#products">Products</a>
+        <a href="#shipping">Shipping</a>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+      <div class="footer__copy">&copy; 2026 Apex Keyboards. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <!-- ========== Voice Widget Mount ========== -->
+  <div id="voice-widget-container"></div>
+
+  <!-- ========== Scripts ========== -->
+  <script src="js/products.js"></script>
+  <!-- Load the SaaS Widget (pointing to our local SaaS platform) -->
+  <script src="http://127.0.0.1:8001/cdn/apex-voice.js"></script>
+
+  <script>
+    // --- SaaS Integration ---
+    ApexVoice.init({
+      apiKey: "DEMO_APEX_KEYBOARDS",
+      systemInstruction: `SYSTEM_PROMPT: You MUST speak exclusively in Darija. You are a sales assistant for Apex Keyboards.
+      
+      ## Product Catalog
+      - Apex 75% Mechanical ($149.99) [id: apex-75]
+      - Apex TKL Pro ($199.99) [id: apex-tkl]
+      - Apex Full-Size ($129.99) [id: apex-full]
+      - Apex 60% Compact ($109.99) [id: apex-60]
+      
+      ## Instructions
+      - Use 'navigate_to_product' when you want to show a keyboard to the user.
+      - Use 'add_to_cart' when the user wants to buy.`,
+      
+      tools: [
+        {
+          name: "add_to_cart",
+          description: "Add a keyboard to the shopping cart.",
+          parameters: {
+            type: "OBJECT",
+            properties: {
+              product_id: { type: "STRING", enum: ["apex-75", "apex-tkl", "apex-full", "apex-60"] }
+            },
+            required: ["product_id"]
+          }
+        },
+        {
+          name: "navigate_to_product",
+          description: "Scroll the screen to a specific keyboard card.",
+          parameters: {
+            type: "OBJECT",
+            properties: {
+              product_id: { type: "STRING", enum: ["apex-75", "apex-tkl", "apex-full", "apex-60"] }
+            },
+            required: ["product_id"]
+          }
+        }
+      ],
+
+      actions: {
+        add_to_cart: (args) => {
+          const btn = document.querySelector(`.btn-cart[data-product-id="${args.product_id}"]`);
+          if (btn) {
+            btn.click(); // Trigger existing cart logic
+            showToast(`Added ${args.product_id} to cart!`);
+          }
+        },
+        navigate_to_product: (args) => {
+          const card = document.querySelector(`.product-card[data-product-id="${args.product_id}"]`);
+          if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.add('product-card--highlight');
+            setTimeout(() => card.classList.remove('product-card--highlight'), 3000);
+          }
+        }
+      }
+    });
+
+    // Helper for notifications
+    function showToast(text) {
+      const toast = document.createElement('div');
+      toast.className = 'saas-toast';
+      toast.textContent = text;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.classList.add('visible'), 10);
+      setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 500);
+      }, 3000);
+    }
+  </script>
+
+</body>
+</html>

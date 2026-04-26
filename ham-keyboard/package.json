@@ -1,0 +1,14 @@
+{
+  "name": "keyboard-voice-demo",
+  "version": "1.0.0",
+  "description": "Keyboard e-commerce landing page with Gemini Live API voice agent",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "dotenv": "^16.4.0"
+  }
+}

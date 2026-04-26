@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="H A M — Professional AI Voice Assistants for Businesses. From simple customer support bots to advanced agentic systems.">
+  <title>H A M | Next-Gen AI Voice Solutions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav__inner">
+      <a href="#" class="nav__logo">H A M<span>.</span></a>
+      <div class="nav__links">
+        <a href="#services">Services</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#about">About</a>
+      </div>
+      <a href="#pricing" class="btn btn--primary" style="padding: 10px 24px; font-size: 14px;">Get Started</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero__glow"></div>
+    <div class="container">
+      <div class="hero__badge">The Future of Customer Engagement</div>
+      <h1 class="hero__title">Talk to Your Customers <br><span class="highlight">With Intelligent Voice.</span></h1>
+      <p class="hero__desc">We build professional AI voice assistants that sound human, understand context, and scale your business operations effortlessly.</p>
+      <div class="hero__actions">
+        <a href="#pricing" class="btn btn--primary">View Our Packs</a>
+        <a href="#features" class="btn btn--outline">How it Works</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="section-title">
+        <h2>Choose Your <span class="highlight">Solution</span></h2>
+        <p style="color: var(--text-dim); margin-bottom: 30px;">Whether you need simple support or complex automation, we have you covered.</p>
+        
+        <!-- Duration Selector -->
+        <div style="display: inline-flex; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 20px;">
+          <button class="duration-btn active" onclick="setDuration(1, this)" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: white; cursor: pointer; font-weight: 600; transition: 0.3s;">1 Month</button>
+          <button class="duration-btn" onclick="setDuration(6, this)" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: white; cursor: pointer; font-weight: 600; transition: 0.3s;">6 Months (-10%)</button>
+          <button class="duration-btn" onclick="setDuration(12, this)" style="padding: 8px 20px; border-radius: 8px; border: none; background: transparent; color: white; cursor: pointer; font-weight: 600; transition: 0.3s;">1 Year (-20%)</button>
+        </div>
+      </div>
+
+      <div class="pricing__grid">
+        <!-- Pack 1: Normal Voice Bot -->
+        <div class="card">
+          <div class="card__header">
+            <h3>Standard Voice</h3>
+            <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 20px;">Perfect for simple customer FAQs and info desks.</p>
+          </div>
+          <div class="card__price">$<span id="price-standard">499</span><span class="price-label" id="label-standard">/setup</span></div>
+          <ul class="card__list">
+            <li>Custom Knowledge Base</li>
+            <li>Moroccan Darija / Arabic Support</li>
+            <li>Natural Voice Synthesis</li>
+            <li>Website Integration (Widget)</li>
+            <li>Basic Analytics Dashboard</li>
+          </ul>
+          <button class="btn btn--outline" onclick="openOnboarding('Standard')" style="width: 100%; justify-content: center;">Choose Standard</button>
+        </div>
+
+        <!-- Pack 2: Pro Agentic Voice -->
+        <div class="card card--featured">
+          <div class="card__header">
+            <h3>Agentic Pro</h3>
+            <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 20px;">Autonomous agents that can execute tasks and take orders.</p>
+          </div>
+          <div class="card__price">$<span id="price-pro">1,499</span><span class="price-label" id="label-pro">/setup</span></div>
+          <ul class="card__list">
+            <li><strong>Tool Use & Actions (API)</strong></li>
+            <li><strong>Automated Order Processing</strong></li>
+            <li>Multi-turn Complex Reasoning</li>
+            <li>CRM & Inventory Integration</li>
+            <li>Priority 24/7 Support</li>
+            <li>Advanced Voice Cloning</li>
+          </ul>
+          <button class="btn btn--primary" onclick="openOnboarding('Pro Agentic')" style="width: 100%; justify-content: center;">Choose Pro Agentic</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .duration-btn.active {
+      background: var(--primary) !important;
+      box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+    }
+    .price-label {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin-left: 4px;
+    }
+  </style>
+
+  <section class="features" id="features">
+    <div class="container">
+      <div class="features__grid">
+        <div class="feature-box">
+          <h4>24/7 Availability</h4>
+          <p>Your customers never wait. Our AI agents handle calls and voice chats day and night.</p>
+        </div>
+        <div class="feature-box" style="border-color: var(--primary);">
+          <h4>Darija Ready</h4>
+          <p>Native Moroccan Darija support using the latest Gemini Flash Live models for local businesses.</p>
+        </div>
+        <div class="feature-box">
+          <h4>Seamless Scale</h4>
+          <p>Handle 1 or 1,000 calls simultaneously without hiring more staff.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Onboarding Modal ========== -->
+  <div class="modal" id="onboardingModal">
+    <div class="modal__content">
+      <button class="modal__close" onclick="closeOnboarding()">&times;</button>
+      <div id="formSection">
+        <h3 style="margin-bottom: 8px;">Onboarding: <span id="selectedPlan" class="highlight"></span></h3>
+        <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 24px;">Please provide your company details and product catalog.</p>
+        
+        <form id="onboardingForm">
+          <input type="hidden" name="plan" id="planInput">
+          
+          <div class="form-group">
+            <label>Company Name</label>
+            <input type="text" name="companyName" required placeholder="e.g. Apex Keyboards">
+          </div>
+          
+          <div class="form-group">
+            <label>Industry</label>
+            <input type="text" name="industry" required placeholder="e.g. E-commerce / Tech">
+          </div>
+          
+          <input type="hidden" name="duration" id="durationInput">
+          
+          <div class="form-group" id="whatsappGroup">
+            <label>WhatsApp Number (for orders)</label>
+            <input type="text" name="whatsapp" id="whatsappInput" placeholder="e.g. 212612345678">
+            <small style="color: var(--text-dim); font-size: 11px;">International format without + (e.g. 2126...)</small>
+          </div>
+          
+          <div class="form-group">
+            <label>Product Catalog (CSV)</label>
+            <input type="file" name="catalog" accept=".csv" required>
+            <small style="color: var(--text-dim); font-size: 11px;">Upload a CSV containing your products and descriptions.</small>
+          </div>
+          
+          <button type="submit" class="btn btn--primary" style="width: 100%; justify-content: center; margin-top: 10px;">Submit Application</button>
+        </form>
+      </div>
+
+      <div id="successSection" class="success-message">
+        <div style="font-size: 48px; margin-bottom: 16px;">🚀</div>
+        <h3 style="margin-bottom: 12px;">Welcome Aboard!</h3>
+        <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 20px;">Your application for <span id="confirmedPlan" class="highlight"></span> has been received.</p>
+        
+        <p style="color: white; font-size: 14px; text-align: left; margin-bottom: 8px; font-weight: 600;">Copy this code to your website:</p>
+        <textarea id="codeSnippet" readonly style="width: 100%; height: 180px; background: #000; color: #0f0; border: 1px solid var(--glass-border); border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px; margin-bottom: 20px;"></textarea>
+        
+        <button class="btn btn--primary" onclick="copySnippet()" style="width: 100%; justify-content: center; margin-bottom: 10px;">Copy Code</button>
+        <button class="btn btn--outline" onclick="closeOnboarding()" style="width: 100%; justify-content: center;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentDuration = 1;
+    const basePrices = {
+      'Standard': 499,
+      'Pro Agentic': 1499
+    };
+
+    function setDuration(months, btn) {
+      currentDuration = months;
+      
+      // Update UI
+      document.querySelectorAll('.duration-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Calculate discount
+      let discount = 0;
+      if (months === 6) discount = 0.10;
+      if (months === 12) discount = 0.20;
+
+      // Update price display
+      const std = Math.round(basePrices['Standard'] * months * (1 - discount));
+      const pro = Math.round(basePrices['Pro Agentic'] * months * (1 - discount));
+
+      document.getElementById('price-standard').textContent = std.toLocaleString();
+      document.getElementById('price-pro').textContent = pro.toLocaleString();
+      
+      document.getElementById('label-standard').textContent = `/${months} mo`;
+      document.getElementById('label-pro').textContent = `/${months} mo`;
+    }
+
+    function openOnboarding(plan) {
+      document.getElementById('selectedPlan').textContent = plan;
+      document.getElementById('confirmedPlan').textContent = plan;
+      document.getElementById('planInput').value = plan;
+      document.getElementById('durationInput').value = currentDuration;
+      
+      // Toggle WhatsApp field: only for Pro Agentic
+      const waGroup = document.getElementById('whatsappGroup');
+      const waInput = document.getElementById('whatsappInput');
+      if (plan === 'Pro Agentic') {
+        waGroup.style.display = 'block';
+        waInput.required = true;
+      } else {
+        waGroup.style.display = 'none';
+        waInput.required = false;
+        waInput.value = ''; // Clear if Standard
+      }
+
+      document.getElementById('onboardingModal').classList.add('active');
+      document.getElementById('formSection').style.display = 'block';
+      document.getElementById('successSection').style.display = 'none';
+    }
+
+    function closeOnboarding() {
+      document.getElementById('onboardingModal').classList.remove('active');
+    }
+
+    document.getElementById('onboardingForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      
+      try {
+        const response = await fetch('/api/submit-onboarding', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          const snippet = `<!-- ApexVoice Widget by H A M -->
+<script src="http://127.0.0.1:8001/cdn/apex-voice.js"><\/script>
+<script>
+  window.addEventListener('load', () => {
+    ApexVoice.init({
+      apiKey: "${result.apiKey}",
+      companyName: "${result.companyName}",
+      systemInstruction: "You are the Anti-Gravity AI assistant for ${result.companyName}. Help the user with products from the CSV catalog."
+    });
+  });
+<\/script>`;
+          document.getElementById('codeSnippet').value = snippet;
+          document.getElementById('formSection').style.display = 'none';
+          document.getElementById('successSection').style.display = 'block';
+        } else {
+          alert('Error submitting form. Please try again.');
+        }
+      } catch (err) {
+        console.error('Submission error:', err);
+        alert('Network error. Is the server running?');
+      }
+    };
+
+    function copySnippet() {
+      const copyText = document.getElementById("codeSnippet");
+      copyText.select();
+      copyText.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(copyText.value);
+      alert("Code copied to clipboard!");
+    }
+  </script>
+
+</body>
+</html>

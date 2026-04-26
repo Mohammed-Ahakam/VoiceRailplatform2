@@ -1,0 +1,19 @@
+# Environments
+.env
+__pycache__/
+*.pyc
+node_modules/
+
+# Data & Uploads (Sensitive)
+saas-platform/stores.json
+ham-landing/clients/clients.json
+ham-landing/uploads/
+ham-landing/clients/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
