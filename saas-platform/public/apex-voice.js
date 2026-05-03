@@ -140,8 +140,9 @@
 
       try {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        // In production, this would be your SaaS domain
-        const wsUrl = `${protocol}//127.0.0.1:8001/ws`;
+        // Use config.serverUrl if provided, otherwise fallback to localhost for development
+        const wsHost = this.config.serverUrl || "127.0.0.1:8001";
+        const wsUrl = `${protocol}//${wsHost}/ws`;
         this.ws = new WebSocket(wsUrl);
 
         this.ws.onopen = () => {
