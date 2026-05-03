@@ -72,6 +72,16 @@ async def submit_onboarding(
     # Save the catalog file (preserve extension)
     file_extension = os.path.splitext(catalog.filename)[1]
     file_path = os.path.join(company_dir, f"catalog{file_extension}")
+    # Read content for MongoDB storage
+    catalog_content = ""
+    try:
+        content_bytes = await catalog.read()
+        catalog_content = content_bytes.decode("utf-8")
+        # Reset for the shutil.copyfileobj below
+        await catalog.seek(0)
+    except Exception as e:
+        print(f"Error reading catalog content: {e}")
+
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(catalog.file, buffer)
         
@@ -94,6 +104,7 @@ async def submit_onboarding(
         "duration": duration,
         "status": "active",
         "csv_path": file_path,
+        "catalog_data": catalog_content,
         "tools": tools
     }
     
