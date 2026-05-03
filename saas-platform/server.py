@@ -91,39 +91,27 @@ async def websocket_endpoint(ws: WebSocket):
             print(f"DEBUG: NO MATCH in stores.json for {api_key}. Using settings from payload.")
             store_settings = config_payload.get("settings", {})
 
-        from utils import format_catalog_from_file, ANTI_GRAVITY_PROMPT_TEMPLATE
+        from utils import format_catalog_from_file, format_catalog_from_string, ANTI_GRAVITY_PROMPT_TEMPLATE
         
         company_name = store_settings.get("companyName", "notre boutique")
         csv_path = store_settings.get("csv_path")
+        catalog_data = store_settings.get("catalog_data")
         
         print(f"DEBUG: Looking for catalog for apiKey {api_key}")
         
         catalog_text = "Aucun produit disponible pour le moment."
-        # If path is absolute (local), try to check if the file exists anyway
-        # or if we can find it relatively in the repo
-        if csv_path:
+        
+        # 1. Use data stored in MongoDB (Shared between services)
+        if catalog_data:
+            catalog_text = format_catalog_from_string(catalog_data)
+            print(f"DEBUG: SUCCESS - Loaded catalog from MongoDB for {api_key}")
+        # 2. Fallback to local file ONLY if MongoDB data is missing
+        elif csv_path:
             if os.path.exists(csv_path):
                 catalog_text = format_catalog_from_file(csv_path)
-                print(f"DEBUG: SUCCESS - Loaded absolute CSV path for {api_key}")
+                print(f"DEBUG: SUCCESS - Loaded local file for {api_key}")
             else:
-                # Try relative path if absolute fails (common when moving to cloud)
-                base_name = os.path.basename(csv_path)
-                # Check multiple potential locations relative to saas-platform/server.py
-                potential_paths = [
-                    base_name,                               # same dir
-                    os.path.join("..", base_name),           # root dir
-                    os.path.join("..", "test_catalog.csv"),  # root test catalog
-                    os.path.join("test_catalog.csv"),        # local test catalog
-                    os.path.join("..", "ham-landing", "uploads", store_settings.get("companyName", "").replace(" ", "_"), base_name),
-                ]
-                print(f"DEBUG: Checking {len(potential_paths)} potential paths for {base_name}...")
-                for p in potential_paths:
-                    if os.path.exists(p):
-                        catalog_text = format_catalog_from_file(p)
-                        print(f"DEBUG: SUCCESS - Found CSV at {p}")
-                        break
-                else:
-                    print(f"DEBUG: FAILED - Could not find any CSV for {api_key}. Using default message.")
+                print(f"DEBUG: FAILED - Catalog data not found in MongoDB or Local Disk for {api_key}")
         
         # Always use our premium Darija system instruction
         system_instruction = ANTI_GRAVITY_PROMPT_TEMPLATE.replace("{CATALOG_PLACEHOLDER}", catalog_text).replace("{COMPANY_NAME}", company_name)
