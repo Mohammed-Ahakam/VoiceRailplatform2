@@ -40,14 +40,16 @@ def format_catalog_from_string(data_string):
             has_header = any(key in cell for cell in first_row for key in header_keywords)
 
             if has_header:
-                # Use DictReader
+                # Use DictReader and make it case-insensitive
                 f.seek(0)
                 dict_reader = csv.DictReader(f)
                 for row in dict_reader:
-                    name = row.get('Product') or row.get('Name') or row.get('Produit') or 'Produit inconnu'
-                    price = row.get('Price') or row.get('Prix') or 'Prix sur demande'
-                    specs = row.get('Description') or row.get('Specs') or row.get('Caractéristiques') or 'Pas de specs'
-                    stock = row.get('Stock') or '1'
+                    # Create a lowercase mapping of the row
+                    low_row = {k.lower(): v for k, v in row.items() if k}
+                    name = low_row.get('product') or low_row.get('name') or low_row.get('produit') or 'Produit inconnu'
+                    price = low_row.get('price') or low_row.get('prix') or 'Prix sur demande'
+                    specs = low_row.get('description') or low_row.get('specs') or low_row.get('caractéristiques') or 'Pas de specs'
+                    stock = low_row.get('stock') or '1'
                     catalog_lines.append(f"- Produit: {name}, Prix: {price}, Specs: {specs}, Stock: {stock}")
             else:
                 # No headers: Use positions (0: Name, 1: Price, 2: Specs)
