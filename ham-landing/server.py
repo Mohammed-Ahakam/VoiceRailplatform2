@@ -34,8 +34,9 @@ app.add_middleware(
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Serve static files (HTML, CSS)
-app.mount("/static", StaticFiles(directory=os.path.dirname(__file__)), name="static")
+# Serve static files (CSS, etc) from the current directory
+# Note: In production, it's safer to put static assets in a 'static' folder.
+app.mount("/assets", StaticFiles(directory=os.path.dirname(__file__)), name="assets")
 
 @app.get("/")
 async def serve_index():
@@ -82,6 +83,8 @@ async def submit_onboarding(
         tools.append({"name": "checkout", "description": "Finaliser la commande et demander les infos client", "parameters": {"type":"OBJECT", "properties":{"product":{"type":"STRING"}}}})
 
     # Update SaaS MongoDB
+    # Important: Store the absolute path or a robust relative path for the CSV
+    # For Railway, we use the relative path from the app root
     stores_payload = {
         "_id": generated_api_key,
         "apiKey": generated_api_key,
@@ -120,8 +123,6 @@ async def submit_onboarding(
     except Exception as e:
         print(f"Error saving client to MongoDB: {e}")
     
-    # (clients_file logic removed as we use MongoDB now)
-
     return {
         "status": "success", 
         "apiKey": generated_api_key,
@@ -136,14 +137,12 @@ async def list_clients():
         # Calculate remaining days for each client
         for client in clients:
             start_date = client.get("startDate")
-            # duration is "1", "6", or "12" (months)
             try:
                 duration_months = int(client.get("duration", 1))
             except:
                 duration_months = 1
                 
             if start_date:
-                # 30 days per month
                 total_seconds = duration_months * 30 * 24 * 3600
                 elapsed_seconds = time.time() - start_date
                 remaining_seconds = total_seconds - elapsed_seconds
@@ -152,7 +151,6 @@ async def list_clients():
             else:
                 client["remainingDays"] = "N/A"
             
-            # Ensure usageMinutes is present
             if "usageMinutes" not in client:
                 client["usageMinutes"] = 0.0
                 
@@ -167,12 +165,8 @@ async def toggle_client(data: dict):
     status = data.get("status") # 'active' or 'inactive'
     
     try:
-        # 1. Update clients collection
         clients_col.update_one({"_id": api_key}, {"$set": {"status": status}})
-        
-        # 2. Update stores collection
         stores_col.update_one({"_id": api_key}, {"$set": {"status": status}})
-        
         return {"status": "success", "newStatus": status}
     except Exception as e:
         return {"status": "error", "message": str(e)}
@@ -181,16 +175,15 @@ async def toggle_client(data: dict):
 async def delete_client(data: dict):
     api_key = data.get("apiKey")
     try:
-        # 1. Delete from clients collection
         clients_col.delete_one({"_id": api_key})
-        # 2. Delete from stores collection
         stores_col.delete_one({"_id": api_key})
-        
         return {"status": "success"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
     import uvicorn
-    # Use port 8004 for the landing page backend
-    uvicorn.run(app, host="0.0.0.0", port=8004)
+    # Use dynamic PORT from environment (Railway) or default to 8004
+    port = int(os.environ.get("PORT", 8004))
+    print(f"Starting Landing Page server on port {port}...")
+    uvicorn.run(app, host="0.0.0.0", port=port)
