@@ -3,6 +3,7 @@ import base64
 import json
 import os
 
+import time
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +36,7 @@ MONGODB_URI = os.environ.get("MONGODB_URI")
 mongo_client = MongoClient(MONGODB_URI)
 db = mongo_client.get_database("ham_db")
 stores_col = db.get_collection("stores")
+clients_col = db.get_collection("clients")
 
 def get_store_config(api_key):
     return stores_col.find_one({"_id": api_key})
@@ -58,6 +60,8 @@ async def get_config(api_key: str):
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
+    start_time = time.time()
+    api_key = "unknown"
 
     # The first message from the client must be the setup configuration
     try:
@@ -229,7 +233,8 @@ async def websocket_endpoint(ws: WebSocket):
                 browser_to_gemini(),
                 gemini_to_browser(),
             )
-
+    except WebSocketDisconnect:
+        print(f"WebSocket disconnected for {api_key}")
     except Exception as e:
         print(f"Session error: {e}")
         import traceback
@@ -238,6 +243,19 @@ async def websocket_endpoint(ws: WebSocket):
             await ws.send_json({"type": "error", "message": str(e)})
         except Exception:
             pass
+    finally:
+        # Calculate and record usage
+        end_time = time.time()
+        duration_minutes = (end_time - start_time) / 60.0
+        
+        if api_key != "unknown":
+            print(f"DEBUG: Recording usage for {api_key}: {duration_minutes:.2f} minutes")
+            try:
+                # Update both collections to keep them in sync
+                stores_col.update_one({"_id": api_key}, {"$inc": {"usageMinutes": duration_minutes}})
+                clients_col.update_one({"_id": api_key}, {"$inc": {"usageMinutes": duration_minutes}})
+            except Exception as mongo_err:
+                print(f"ERROR: Failed to update usage in MongoDB: {mongo_err}")
 
 
 if __name__ == "__main__":

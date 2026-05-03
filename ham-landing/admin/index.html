@@ -153,6 +153,7 @@
                     <th>Company</th>
                     <th>Plan</th>
                     <th>WhatsApp</th>
+                    <th>Usage</th>
                     <th>Remaining</th>
                     <th>Status</th>
                     <th>Action</th>
@@ -196,6 +197,11 @@
                     </td>
                     <td>${client.plan || 'Standard'}</td>
                     <td>${client.whatsapp || 'N/A'}</td>
+                    <td>
+                        <span style="color:var(--primary); font-weight:600">
+                            ${(client.usageMinutes || 0).toFixed(2)} min
+                        </span>
+                    </td>
                     <td><span style="color:${remainingColor}; font-weight:600">${remaining} days</span></td>
                     <td>
                         <span class="status-badge status-${status}">${status}</span>

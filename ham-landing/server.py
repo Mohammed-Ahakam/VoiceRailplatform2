@@ -151,6 +151,10 @@ async def list_clients():
                 client["remainingDays"] = max(0, remaining_days)
             else:
                 client["remainingDays"] = "N/A"
+            
+            # Ensure usageMinutes is present
+            if "usageMinutes" not in client:
+                client["usageMinutes"] = 0.0
                 
         return clients
     except Exception as e:
