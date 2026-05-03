@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 from google import genai
 from google.genai import types
 
-from utils import format_catalog_from_csv, get_latest_uploaded_csv
+from utils import format_catalog_from_file, get_latest_uploaded_catalog
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
@@ -87,12 +87,12 @@ async def websocket_endpoint(ws: WebSocket):
 
     # Load dynamic catalog
     root_dir = os.path.join(os.path.dirname(__file__), "..")
-    csv_path = get_latest_uploaded_csv(root_dir)
+    csv_path = get_latest_uploaded_catalog(root_dir)
     if not csv_path:
         # Fallback to test catalog if nothing uploaded
         csv_path = os.path.join(root_dir, "test_catalog.csv")
     
-    catalog_text = format_catalog_from_csv(csv_path)
+    catalog_text = format_catalog_from_file(csv_path)
     system_prompt = PROMPT_TEMPLATE.replace("{CATALOG_PLACEHOLDER}", catalog_text)
     
     print(f"Starting session with catalog from: {csv_path}")

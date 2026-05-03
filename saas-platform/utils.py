@@ -1,31 +1,46 @@
 import os
 import csv
 
-def format_catalog_from_csv(csv_path):
-    print(f"DEBUG: Formatting catalog from {csv_path}")
-    if not os.path.exists(csv_path):
-        print(f"DEBUG: CSV path does not exist: {csv_path}")
+def format_catalog_from_file(file_path):
+    print(f"DEBUG: Formatting catalog from {file_path}")
+    if not os.path.exists(file_path):
+        print(f"DEBUG: File path does not exist: {file_path}")
         return "- Aucun produit disponible pour le moment."
     
     catalog_lines = []
+    file_ext = os.path.splitext(file_path)[1].lower()
+
     try:
-        with open(csv_path, mode='r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                # Support various column names
-                name = row.get('Product') or row.get('Name') or row.get('Produit') or 'Produit inconnu'
-                price = row.get('Price') or row.get('Prix') or 'Prix sur demande'
-                specs = row.get('Description') or row.get('Specs') or row.get('Caractéristiques') or 'Pas de specs'
-                stock = row.get('Stock') or '1'
-                
-                line = f"- Produit: {name}, Prix: {price}, Specs: {specs}, Stock: {stock}"
-                catalog_lines.append(line)
+        if file_ext == '.json':
+            import json
+            with open(file_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                # Handle both list of dicts and dict with products key
+                products = data if isinstance(data, list) else data.get('products', [])
+                for row in products:
+                    name = row.get('Product') or row.get('Name') or row.get('Produit') or 'Produit inconnu'
+                    price = row.get('Price') or row.get('Prix') or 'Prix sur demande'
+                    specs = row.get('Description') or row.get('Specs') or row.get('Caractéristiques') or 'Pas de specs'
+                    stock = row.get('Stock') or '1'
+                    line = f"- Produit: {name}, Prix: {price}, Specs: {specs}, Stock: {stock}"
+                    catalog_lines.append(line)
+        else:
+            # Fallback to CSV
+            with open(file_path, mode='r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    name = row.get('Product') or row.get('Name') or row.get('Produit') or 'Produit inconnu'
+                    price = row.get('Price') or row.get('Prix') or 'Prix sur demande'
+                    specs = row.get('Description') or row.get('Specs') or row.get('Caractéristiques') or 'Pas de specs'
+                    stock = row.get('Stock') or '1'
+                    line = f"- Produit: {name}, Prix: {price}, Specs: {specs}, Stock: {stock}"
+                    catalog_lines.append(line)
         
         result = "\n".join(catalog_lines)
         print(f"DEBUG: Formatted {len(catalog_lines)} products.")
         return result
     except Exception as e:
-        print(f"DEBUG: Error reading CSV: {e}")
+        print(f"DEBUG: Error reading file: {e}")
         return "- Erreur lors de la lecture du catalogue."
 
 ANTI_GRAVITY_PROMPT_TEMPLATE = """[CRITICAL: LANGUAGE RULE]

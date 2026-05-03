@@ -5,8 +5,30 @@ import uuid
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from pymongo import MongoClient
+from dotenv import load_dotenv
+
+# Load .env from the parent directory
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+
+# MongoDB Setup
+MONGODB_URI = os.environ.get("MONGODB_URI")
+mongo_client = MongoClient(MONGODB_URI)
+db = mongo_client.get_database("ham_db")
+stores_col = db.get_collection("stores")
+clients_col = db.get_collection("clients")
+
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Directory to save uploaded catalogs
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
@@ -46,29 +68,12 @@ async def submit_onboarding(
     company_dir = os.path.join(UPLOAD_DIR, company_folder_name)
     os.makedirs(company_dir, exist_ok=True)
     
-    # Save the CSV file
-    file_path = os.path.join(company_dir, "catalog.csv")
+    # Save the catalog file (preserve extension)
+    file_extension = os.path.splitext(catalog.filename)[1]
+    file_path = os.path.join(company_dir, f"catalog{file_extension}")
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(catalog.file, buffer)
         
-    # Update SaaS stores.json
-    saas_dir = "d:/Gemini Voice2/Gemini Voice2/saas-platform"
-    stores_file = os.path.join(saas_dir, "stores.json")
-    
-    print(f"Updating stores file: {stores_file}")
-    
-    stores = {}
-    if os.path.exists(stores_file):
-        try:
-            with open(stores_file, "r") as f:
-                stores = json.load(f)
-            print(f"Current stores in DB: {list(stores.keys())}")
-        except Exception as e:
-            print(f"Error reading stores.json: {e}")
-            
-    stores[generated_api_key] = {
-        "apiKey": generated_api_key,
-        "companyName": companyName,
     # Define tools based on plan
     tools = [{"name": "navigate_to_product", "description": "Voir le produit", "parameters": {"type":"OBJECT", "properties":{"product":{"type":"STRING"}}}}]
     
@@ -76,7 +81,9 @@ async def submit_onboarding(
         tools.append({"name": "add_to_cart", "description": "Ajouter au panier", "parameters": {"type":"OBJECT", "properties":{"product":{"type":"STRING"}}}})
         tools.append({"name": "checkout", "description": "Finaliser la commande et demander les infos client", "parameters": {"type":"OBJECT", "properties":{"product":{"type":"STRING"}}}})
 
-    stores[generated_api_key] = {
+    # Update SaaS MongoDB
+    stores_payload = {
+        "_id": generated_api_key,
         "apiKey": generated_api_key,
         "companyName": companyName,
         "whatsapp": whatsapp or "",
@@ -88,25 +95,15 @@ async def submit_onboarding(
     }
     
     try:
-        with open(stores_file, "w") as f:
-            json.dump(stores, f, indent=4)
-        print(f"Successfully updated stores.json with key: {generated_api_key}")
+        stores_col.replace_one({"_id": generated_api_key}, stores_payload, upsert=True)
+        print(f"Successfully updated MongoDB stores with key: {generated_api_key}")
     except Exception as e:
-        print(f"Error writing to stores.json: {e}")
+        print(f"Error writing to MongoDB: {e}")
 
-    # Record the new client in a master file
-    clients_dir = "d:/Gemini Voice2/Gemini Voice2/ham-landing/clients"
-    os.makedirs(clients_dir, exist_ok=True)
-    clients_file = os.path.join(clients_dir, "clients.json")
-    
-    all_clients = []
-    if os.path.exists(clients_file):
-        try:
-            with open(clients_file, "r") as f:
-                all_clients = json.load(f)
-        except: pass
-    
-    all_clients.append({
+    # Record the new client in MongoDB
+    import time
+    client_payload = {
+        "_id": generated_api_key,
         "apiKey": generated_api_key,
         "companyName": companyName,
         "industry": industry,
@@ -114,11 +111,16 @@ async def submit_onboarding(
         "plan": plan,
         "duration": duration,
         "status": "active",
-        "timestamp": str(uuid.uuid4()) # Using UUID as a dummy timestamp/ID
-    })
+        "startDate": time.time()  # Current timestamp in seconds
+    }
     
-    with open(clients_file, "w") as f:
-        json.dump(all_clients, f, indent=4)
+    try:
+        clients_col.replace_one({"_id": generated_api_key}, client_payload, upsert=True)
+        print(f"Successfully recorded client in MongoDB: {generated_api_key}")
+    except Exception as e:
+        print(f"Error saving client to MongoDB: {e}")
+    
+    # (clients_file logic removed as we use MongoDB now)
 
     return {
         "status": "success", 
@@ -128,41 +130,61 @@ async def submit_onboarding(
 
 @app.get("/api/admin/clients")
 async def list_clients():
-    clients_file = "d:/Gemini Voice2/Gemini Voice2/ham-landing/clients/clients.json"
-    if os.path.exists(clients_file):
-        with open(clients_file, "r") as f:
-            return json.load(f)
-    return []
+    import time
+    try:
+        clients = list(clients_col.find())
+        # Calculate remaining days for each client
+        for client in clients:
+            start_date = client.get("startDate")
+            # duration is "1", "6", or "12" (months)
+            try:
+                duration_months = int(client.get("duration", 1))
+            except:
+                duration_months = 1
+                
+            if start_date:
+                # 30 days per month
+                total_seconds = duration_months * 30 * 24 * 3600
+                elapsed_seconds = time.time() - start_date
+                remaining_seconds = total_seconds - elapsed_seconds
+                remaining_days = int(remaining_seconds / (24 * 3600))
+                client["remainingDays"] = max(0, remaining_days)
+            else:
+                client["remainingDays"] = "N/A"
+                
+        return clients
+    except Exception as e:
+        print(f"Error fetching clients: {e}")
+        return []
 
 @app.post("/api/admin/toggle-client")
 async def toggle_client(data: dict):
     api_key = data.get("apiKey")
     status = data.get("status") # 'active' or 'inactive'
     
-    # 1. Update clients.json
-    clients_file = "d:/Gemini Voice2/Gemini Voice2/ham-landing/clients/clients.json"
-    if os.path.exists(clients_file):
-        with open(clients_file, "r") as f:
-            all_clients = json.load(f)
-        for c in all_clients:
-            if c.get("apiKey") == api_key:
-                c["status"] = status
-        with open(clients_file, "w") as f:
-            json.dump(all_clients, f, indent=4)
+    try:
+        # 1. Update clients collection
+        clients_col.update_one({"_id": api_key}, {"$set": {"status": status}})
+        
+        # 2. Update stores collection
+        stores_col.update_one({"_id": api_key}, {"$set": {"status": status}})
+        
+        return {"status": "success", "newStatus": status}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
-    # 2. Update stores.json (The SaaS Engine)
-    saas_dir = "d:/Gemini Voice2/Gemini Voice2/saas-platform"
-    stores_file = os.path.join(saas_dir, "stores.json")
-    if os.path.exists(stores_file):
-        with open(stores_file, "r") as f:
-            stores = json.load(f)
-        if api_key in stores:
-            stores[api_key]["status"] = status
-            with open(stores_file, "w") as f:
-                json.dump(stores, f, indent=4)
-            return {"status": "success", "newStatus": status}
-            
-    return {"status": "error", "message": "Client not found in SaaS engine"}
+@app.post("/api/admin/delete-client")
+async def delete_client(data: dict):
+    api_key = data.get("apiKey")
+    try:
+        # 1. Delete from clients collection
+        clients_col.delete_one({"_id": api_key})
+        # 2. Delete from stores collection
+        stores_col.delete_one({"_id": api_key})
+        
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
     import uvicorn

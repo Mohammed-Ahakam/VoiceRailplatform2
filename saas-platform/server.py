@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from google import genai
 from google.genai import types
+from pymongo import MongoClient
 
 # Load .env from the parent directory
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
@@ -29,30 +30,29 @@ app.mount("/cdn", StaticFiles(directory=os.path.join(os.path.dirname(__file__), 
 # Serve the dashboard files
 app.mount("/dashboard", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "dashboard")), name="dashboard")
 
-STORES_FILE = os.path.join(os.path.dirname(__file__), "stores.json")
+# MongoDB Setup
+MONGODB_URI = os.environ.get("MONGODB_URI")
+mongo_client = MongoClient(MONGODB_URI)
+db = mongo_client.get_database("ham_db")
+stores_col = db.get_collection("stores")
 
-def load_stores():
-    if os.path.exists(STORES_FILE):
-        with open(STORES_FILE, "r") as f:
-            return json.load(f)
-    return {}
+def get_store_config(api_key):
+    return stores_col.find_one({"_id": api_key})
 
-def save_stores(stores):
-    with open(STORES_FILE, "w") as f:
-        json.dump(stores, f, indent=4)
+def save_store_config(api_key, config):
+    config["_id"] = api_key
+    stores_col.replace_one({"_id": api_key}, config, upsert=True)
 
 @app.post("/api/save-config")
 async def save_config(config: dict):
-    stores = load_stores()
     api_key = config.get("apiKey")
-    stores[api_key] = config
-    save_stores(stores)
+    save_store_config(api_key, config)
     return {"status": "success", "apiKey": api_key}
 
 @app.get("/api/get-config/{api_key}")
 async def get_config(api_key: str):
-    stores = load_stores()
-    return stores.get(api_key, {})
+    config = get_store_config(api_key)
+    return config or {}
 
 
 @app.websocket("/ws")
@@ -72,13 +72,11 @@ async def websocket_endpoint(ws: WebSocket):
         api_key = config_payload.get("apiKey")
         print(f"DEBUG: Received apiKey from widget: '{api_key}'")
         
-        # Look up store settings in our "database"
-        stores = load_stores()
-        print(f"DEBUG: Keys in stores.json: {list(stores.keys())}")
+        # Look up store settings in MongoDB
+        store_settings = get_store_config(api_key)
         
-        store_settings = stores.get(api_key, {})
         if store_settings:
-            print(f"DEBUG: Match found in stores.json for {api_key}")
+            print(f"DEBUG: Match found in MongoDB for {api_key}")
             # Check if service is active
             if store_settings.get("status") == "inactive":
                 print(f"DEBUG: REJECTED - Service inactive for {api_key}")
@@ -89,15 +87,15 @@ async def websocket_endpoint(ws: WebSocket):
             print(f"DEBUG: NO MATCH in stores.json for {api_key}. Using settings from payload.")
             store_settings = config_payload.get("settings", {})
 
-        from utils import format_catalog_from_csv, ANTI_GRAVITY_PROMPT_TEMPLATE
+        from utils import format_catalog_from_file, ANTI_GRAVITY_PROMPT_TEMPLATE
         
         system_instruction = store_settings.get("system_instruction", "You are a helpful assistant.")
         csv_path = store_settings.get("csv_path")
         
-        print(f"DEBUG: Looking for CSV at {csv_path} for apiKey {api_key}")
+        print(f"DEBUG: Looking for catalog at {csv_path} for apiKey {api_key}")
         
         if csv_path and os.path.exists(csv_path):
-            catalog_text = format_catalog_from_csv(csv_path)
+            catalog_text = format_catalog_from_file(csv_path)
             company_name = store_settings.get("companyName", "notre boutique")
             system_instruction = ANTI_GRAVITY_PROMPT_TEMPLATE.replace("{CATALOG_PLACEHOLDER}", catalog_text).replace("{COMPANY_NAME}", company_name)
             print(f"DEBUG: SUCCESS - Injected CSV catalog and company name '{company_name}' for store: {api_key}")

@@ -67,23 +67,26 @@ h1, h2, h3 {
 .btn--primary {
   background: var(--primary);
   color: white;
-  box-shadow: 0 10px 20px var(--primary-glow);
+  border: none;
+  box-shadow: 0 8px 24px rgba(108, 92, 231, 0.25);
 }
 
 .btn--primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 30px var(--primary-glow);
-  filter: brightness(1.1);
+  transform: translateY(-2px);
+  background: #7c6ef0;
+  box-shadow: 0 12px 32px rgba(108, 92, 231, 0.35);
 }
 
 .btn--outline {
-  border: 2px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
   color: white;
 }
 
 .btn--outline:hover {
-  background: var(--glass);
+  background: rgba(255, 255, 255, 0.1);
   border-color: white;
+  transform: translateY(-2px);
 }
 
 /* ========== Navigation ========== */
@@ -379,6 +382,65 @@ h1, h2, h3 {
 
 .success-message {
   text-align: center;
-  padding: 20px;
   display: none;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: rgba(108, 92, 231, 0.15);
+  color: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 32px;
+  flex-shrink: 0;
+}
+
+.success-icon svg {
+  width: 40px !important;
+  height: 40px !important;
+  display: block;
+}
+
+.code-container {
+  text-align: left;
+  margin: 24px 0;
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+  border-bottom: none;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.code-header span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#codeSnippet {
+  width: 100%;
+  height: 160px;
+  background: #0a0a0c;
+  color: #a29bfe;
+  border: 1px solid var(--glass-border);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  padding: 16px;
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  outline: none;
+  resize: none;
 }

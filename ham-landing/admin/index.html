@@ -153,6 +153,7 @@
                     <th>Company</th>
                     <th>Plan</th>
                     <th>WhatsApp</th>
+                    <th>Remaining</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -184,6 +185,9 @@
                 const status = client.status || 'active';
                 if (status === 'active') activeCount++;
                 
+                const remaining = client.remainingDays !== undefined ? client.remainingDays : 'N/A';
+                const remainingColor = remaining <= 5 ? 'var(--danger)' : 'var(--success)';
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
@@ -192,14 +196,20 @@
                     </td>
                     <td>${client.plan || 'Standard'}</td>
                     <td>${client.whatsapp || 'N/A'}</td>
+                    <td><span style="color:${remainingColor}; font-weight:600">${remaining} days</span></td>
                     <td>
                         <span class="status-badge status-${status}">${status}</span>
                     </td>
                     <td>
-                        ${status === 'active' 
-                            ? `<button class="btn btn--deactivate" onclick="toggleStatus('${client.apiKey}', 'inactive')">Deactivate</button>`
-                            : `<button class="btn btn--activate" onclick="toggleStatus('${client.apiKey}', 'active')">Activate</button>`
-                        }
+                        <div style="display:flex; gap:8px">
+                            ${status === 'active' 
+                                ? `<button class="btn btn--deactivate" onclick="toggleStatus('${client.apiKey}', 'inactive')">Deactivate</button>`
+                                : `<button class="btn btn--activate" onclick="toggleStatus('${client.apiKey}', 'active')">Activate</button>`
+                            }
+                            <button class="btn btn--delete" onclick="deleteClient('${client.apiKey}')" style="background:rgba(214, 48, 49, 0.1); color:var(--danger); border:1px solid var(--danger); padding:8px 12px">
+                                <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
+                        </div>
                     </td>
                 `;
                 body.appendChild(row);
@@ -207,6 +217,27 @@
             
             document.getElementById('totalClients').textContent = clients.length;
             document.getElementById('activeBots').textContent = activeCount;
+        }
+
+        async function deleteClient(apiKey) {
+            if (!confirm(`Are you sure you want to PERMANENTLY DELETE this client? This cannot be undone.`)) return;
+            
+            try {
+                const response = await fetch('/api/admin/delete-client', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiKey })
+                });
+                
+                const result = await response.json();
+                if (result.status === 'success') {
+                    fetchClients();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (err) {
+                alert('Failed to delete client');
+            }
         }
 
         async function toggleStatus(apiKey, newStatus) {

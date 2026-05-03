@@ -151,9 +151,9 @@
           </div>
           
           <div class="form-group">
-            <label>Product Catalog (CSV)</label>
-            <input type="file" name="catalog" accept=".csv" required>
-            <small style="color: var(--text-dim); font-size: 11px;">Upload a CSV containing your products and descriptions.</small>
+            <label>Product Catalog (CSV or JSON)</label>
+            <input type="file" name="catalog" accept=".csv,.json" required>
+            <small style="color: var(--text-dim); font-size: 11px;">Upload a CSV or JSON containing your products.</small>
           </div>
           
           <button type="submit" class="btn btn--primary" style="width: 100%; justify-content: center; margin-top: 10px;">Submit Application</button>
@@ -161,15 +161,25 @@
       </div>
 
       <div id="successSection" class="success-message">
-        <div style="font-size: 48px; margin-bottom: 16px;">🚀</div>
-        <h3 style="margin-bottom: 12px;">Welcome Aboard!</h3>
-        <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 20px;">Your application for <span id="confirmedPlan" class="highlight"></span> has been received.</p>
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h2 style="margin-bottom: 12px; font-size: 32px;">Registration Complete</h2>
+        <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 24px;">Your application for <span id="confirmedPlan" class="highlight" style="font-weight: 700;"></span> has been successfully processed.</p>
         
-        <p style="color: white; font-size: 14px; text-align: left; margin-bottom: 8px; font-weight: 600;">Copy this code to your website:</p>
-        <textarea id="codeSnippet" readonly style="width: 100%; height: 180px; background: #000; color: #0f0; border: 1px solid var(--glass-border); border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px; margin-bottom: 20px;"></textarea>
+        <div class="code-container">
+          <div class="code-header">
+            <span>Widget Installation Script</span>
+          </div>
+          <textarea id="codeSnippet" readonly></textarea>
+        </div>
         
-        <button class="btn btn--primary" onclick="copySnippet()" style="width: 100%; justify-content: center; margin-bottom: 10px;">Copy Code</button>
-        <button class="btn btn--outline" onclick="closeOnboarding()" style="width: 100%; justify-content: center;">Close</button>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn--outline" onclick="closeOnboarding()" style="flex: 1; justify-content: center;">Close</button>
+          <button class="btn btn--primary" onclick="copySnippet()" style="flex: 2; justify-content: center;">Copy Installation Code</button>
+        </div>
       </div>
     </div>
   </div>
@@ -244,14 +254,15 @@
         const result = await response.json();
         
         if (response.ok) {
-          const snippet = `<!-- ApexVoice Widget by H A M -->
-<script src="http://127.0.0.1:8001/cdn/apex-voice.js"><\/script>
+          // Update snippet
+        const snippet = `<!--  HAM Voice Widget  -->
+<script src="http://127.0.0.1:8001/cdn/apex-voice.js?v=2"><\/script>
 <script>
   window.addEventListener('load', () => {
     ApexVoice.init({
       apiKey: "${result.apiKey}",
       companyName: "${result.companyName}",
-      systemInstruction: "You are the Anti-Gravity AI assistant for ${result.companyName}. Help the user with products from the CSV catalog."
+      systemInstruction: "Tu es l'assistant IA Anti-Gravity pour ${result.companyName}. Aide l'utilisateur avec les produits du catalogue."
     });
   });
 <\/script>`;
