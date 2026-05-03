@@ -6,6 +6,10 @@
 (function() {
   'use strict';
 
+  // Capture the host of this script to allow auto-connecting to the correct backend
+  const scriptTag = document.currentScript;
+  const scriptHost = scriptTag ? new URL(scriptTag.src).host : "127.0.0.1:8001";
+
   // --- Audio Recorder ---
   class AudioRecorder {
     constructor(onData) {
@@ -48,7 +52,7 @@
         this.stream = null;
       }
       if (this.context) {
-        this.context.close().catch(() => {});
+        this.context.close().catch(() => { });
         this.context = null;
       }
     }
@@ -112,7 +116,7 @@
     stop() {
       this.clearQueue();
       if (this.context) {
-        this.context.close().catch(() => {});
+        this.context.close().catch(() => { });
         this.context = null;
       }
     }
@@ -140,8 +144,8 @@
 
       try {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        // Use config.serverUrl if provided, otherwise fallback to localhost for development
-        const wsHost = this.config.serverUrl || "127.0.0.1:8001";
+        // Use config.serverUrl if provided, otherwise fallback to the host this script was loaded from
+        const wsHost = this.config.serverUrl || scriptHost;
         const wsUrl = `${protocol}//${wsHost}/ws`;
         this.ws = new WebSocket(wsUrl);
 
@@ -160,8 +164,8 @@
 
         this.ws.onmessage = async (event) => {
           const msg = JSON.parse(event.data);
-          
-          switch(msg.type) {
+
+          switch (msg.type) {
             case 'status':
               if (msg.message === 'Connected to Gemini SaaS Engine') {
                 this.state = 'active';
@@ -301,7 +305,7 @@
       const name = document.getElementById('apex-name').value;
       const phone = document.getElementById('apex-phone').value;
       const address = document.getElementById('apex-address').value;
-      
+
       if (!name || !phone || !address) {
         alert('Veuillez remplir tous les champs.');
         return;
