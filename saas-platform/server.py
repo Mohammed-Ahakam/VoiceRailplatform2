@@ -108,17 +108,22 @@ async def websocket_endpoint(ws: WebSocket):
             else:
                 # Try relative path if absolute fails (common when moving to cloud)
                 base_name = os.path.basename(csv_path)
-                # Check a few common locations
+                # Check multiple potential locations relative to saas-platform/server.py
                 potential_paths = [
-                    base_name,
+                    base_name,                               # same dir
+                    os.path.join("..", base_name),           # root dir
+                    os.path.join("..", "test_catalog.csv"),  # root test catalog
+                    os.path.join("test_catalog.csv"),        # local test catalog
                     os.path.join("..", "ham-landing", "uploads", store_settings.get("companyName", "").replace(" ", "_"), base_name),
-                    os.path.join("test_catalog.csv") # Fallback to test catalog if nothing else
                 ]
+                print(f"DEBUG: Checking {len(potential_paths)} potential paths for {base_name}...")
                 for p in potential_paths:
                     if os.path.exists(p):
                         catalog_text = format_catalog_from_file(p)
-                        print(f"DEBUG: SUCCESS - Found relative CSV path at {p}")
+                        print(f"DEBUG: SUCCESS - Found CSV at {p}")
                         break
+                else:
+                    print(f"DEBUG: FAILED - Could not find any CSV for {api_key}. Using default message.")
         
         # Always use our premium Darija system instruction
         system_instruction = ANTI_GRAVITY_PROMPT_TEMPLATE.replace("{CATALOG_PLACEHOLDER}", catalog_text).replace("{COMPANY_NAME}", company_name)
