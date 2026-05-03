@@ -93,18 +93,36 @@ async def websocket_endpoint(ws: WebSocket):
 
         from utils import format_catalog_from_file, ANTI_GRAVITY_PROMPT_TEMPLATE
         
-        system_instruction = store_settings.get("system_instruction", "You are a helpful assistant.")
+        company_name = store_settings.get("companyName", "notre boutique")
         csv_path = store_settings.get("csv_path")
         
-        print(f"DEBUG: Looking for catalog at {csv_path} for apiKey {api_key}")
+        print(f"DEBUG: Looking for catalog for apiKey {api_key}")
         
-        if csv_path and os.path.exists(csv_path):
-            catalog_text = format_catalog_from_file(csv_path)
-            company_name = store_settings.get("companyName", "notre boutique")
-            system_instruction = ANTI_GRAVITY_PROMPT_TEMPLATE.replace("{CATALOG_PLACEHOLDER}", catalog_text).replace("{COMPANY_NAME}", company_name)
-            print(f"DEBUG: SUCCESS - Injected CSV catalog and company name '{company_name}' for store: {api_key}")
-        else:
-            print(f"DEBUG: WARNING - CSV NOT FOUND or NOT PROVIDED for {api_key}. Using fallback instruction.")
+        catalog_text = "Aucun produit disponible pour le moment."
+        # If path is absolute (local), try to check if the file exists anyway
+        # or if we can find it relatively in the repo
+        if csv_path:
+            if os.path.exists(csv_path):
+                catalog_text = format_catalog_from_file(csv_path)
+                print(f"DEBUG: SUCCESS - Loaded absolute CSV path for {api_key}")
+            else:
+                # Try relative path if absolute fails (common when moving to cloud)
+                base_name = os.path.basename(csv_path)
+                # Check a few common locations
+                potential_paths = [
+                    base_name,
+                    os.path.join("..", "ham-landing", "uploads", store_settings.get("companyName", "").replace(" ", "_"), base_name),
+                    os.path.join("test_catalog.csv") # Fallback to test catalog if nothing else
+                ]
+                for p in potential_paths:
+                    if os.path.exists(p):
+                        catalog_text = format_catalog_from_file(p)
+                        print(f"DEBUG: SUCCESS - Found relative CSV path at {p}")
+                        break
+        
+        # Always use our premium Darija system instruction
+        system_instruction = ANTI_GRAVITY_PROMPT_TEMPLATE.replace("{CATALOG_PLACEHOLDER}", catalog_text).replace("{COMPANY_NAME}", company_name)
+        print(f"DEBUG: System Instruction prepared for {company_name}")
 
         tools_schema = store_settings.get("tools", [])
         
