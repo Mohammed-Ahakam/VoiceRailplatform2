@@ -1,6 +1,71 @@
 import os
 import csv
 
+def format_catalog_from_string(data_string):
+    print(f"DEBUG: Formatting catalog from string data (length: {len(data_string)})")
+    if not data_string:
+        return "- Aucun produit disponible pour le moment."
+    
+    catalog_lines = []
+    
+    try:
+        # Try JSON first
+        if data_string.strip().startswith(('[', '{')):
+            import json
+            data = json.loads(data_string)
+            products = data if isinstance(data, list) else data.get('products', [])
+            for row in products:
+                name = row.get('Product') or row.get('Name') or row.get('Produit') or 'Produit inconnu'
+                price = row.get('Price') or row.get('Prix') or 'Prix sur demande'
+                specs = row.get('Description') or row.get('Specs') or row.get('Caractéristiques') or 'Pas de specs'
+                stock = row.get('Stock') or '1'
+                line = f"- Produit: {name}, Prix: {price}, Specs: {specs}, Stock: {stock}"
+                catalog_lines.append(line)
+        else:
+            # Fallback to CSV
+            import io
+            # Clean the string and handle potential encoding issues
+            clean_data = data_string.strip().replace('\ufeff', '')
+            f = io.StringIO(clean_data)
+            
+            # Use a basic reader first to check for headers
+            raw_reader = csv.reader(f)
+            rows = list(raw_reader)
+            if not rows:
+                return "- Catalogue vide."
+
+            # Heuristic: Check if first row contains common header keywords
+            first_row = [str(cell).lower() for cell in rows[0]]
+            header_keywords = ['product', 'name', 'produit', 'price', 'prix', 'description', 'specs']
+            has_header = any(key in cell for cell in first_row for key in header_keywords)
+
+            if has_header:
+                # Use DictReader
+                f.seek(0)
+                dict_reader = csv.DictReader(f)
+                for row in dict_reader:
+                    name = row.get('Product') or row.get('Name') or row.get('Produit') or 'Produit inconnu'
+                    price = row.get('Price') or row.get('Prix') or 'Prix sur demande'
+                    specs = row.get('Description') or row.get('Specs') or row.get('Caractéristiques') or 'Pas de specs'
+                    stock = row.get('Stock') or '1'
+                    catalog_lines.append(f"- Produit: {name}, Prix: {price}, Specs: {specs}, Stock: {stock}")
+            else:
+                # No headers: Use positions (0: Name, 1: Price, 2: Specs)
+                for row in rows:
+                    if len(row) >= 2:
+                        name = row[0]
+                        price = row[1]
+                        specs = row[2] if len(row) > 2 else "Produit de qualité"
+                        catalog_lines.append(f"- Produit: {name}, Prix: {price}, Specs: {specs}, Stock: 1")
+        
+        result = "\n".join(catalog_lines)
+        print(f"DEBUG: Formatted {len(catalog_lines)} products successfully.")
+        return result
+    except Exception as e:
+        print(f"DEBUG: Error parsing catalog string: {e}")
+        # Final fallback: just return the raw lines formatted as bullets
+        return "- " + data_string.replace('\n', '\n- ')
+
 def format_catalog_from_file(file_path):
     print(f"DEBUG: Formatting catalog from {file_path}")
     if not os.path.exists(file_path):
